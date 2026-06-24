@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Администратор отчётов</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+body{background:#f3f4f6;min-height:100vh}
+.app{display:flex;min-height:100vh;position:relative}
+.sidebar{width:220px;background:#111827;display:flex;flex-direction:column;flex-shrink:0;min-height:100vh}
+.sb-logo{padding:1.25rem 1rem;border-bottom:1px solid #374151;display:flex;align-items:center;gap:10px}
+.sb-icon{width:34px;height:34px;background:#3b82f6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sb-title{color:white;font-size:12px;font-weight:500;line-height:1.4}
+.sb-title span{color:#9ca3af;font-weight:400}
+.sb-nav{flex:1;padding:.75rem .5rem}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;color:#9ca3af;font-size:14px;transition:background .15s}
+.nav-item:hover{background:#1f2937}
+.nav-item.active{background:#374151;color:white}
+.nav-icon{font-size:16px}
+.sb-bottom{padding:.75rem;border-top:1px solid #374151}
+.lang-btns{display:flex;gap:4px;margin-bottom:10px}
+.lang-btn{padding:3px 7px;border-radius:5px;border:none;cursor:pointer;font-size:11px;font-weight:500;background:transparent;color:#6b7280}
+.lang-btn.active{background:white;color:#111827}
+.user-row{display:flex;align-items:center;gap:8px}
+.avatar{width:30px;height:30px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:500;flex-shrink:0}
+.user-name{flex:1;font-size:13px;color:#d1d5db;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{background:none;border:none;cursor:pointer;color:#6b7280;padding:4px;font-size:16px}
+.main{flex:1;overflow:auto;min-width:0}
+.page{padding:1.5rem 1.75rem}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem}
+.page-title{font-size:22px;font-weight:500;color:#111827}
+.page-sub{font-size:13px;color:#6b7280;margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;border:none}
+.btn-dark{background:#111827;color:white}
+.btn-outline{background:white;color:#374151;border:1px solid #e5e7eb}
+.btn-danger{background:white;color:#ef4444;border:1px solid #fecaca}
+.btn:disabled{opacity:.5;cursor:default}
+.alerts-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:12px 16px;margin-bottom:1.25rem}
+.alerts-title{font-weight:500;font-size:14px;color:#78350f;margin-bottom:8px}
+.alert-item{font-size:13px;color:#92400e;margin-top:4px}
+.alert-item strong{font-weight:600}
+.alert-tag{font-weight:500}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
+.stat-card{background:white;border-radius:12px;border:1px solid #e5e7eb;padding:1rem 1.25rem;display:flex;align-items:center;gap:12px}
+.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.stat-label{font-size:12px;color:#6b7280}
+.stat-val{font-size:26px;font-weight:500;color:#111827}
+.cos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}
+.co-card{background:white;border-radius:12px;border:1px solid #e5e7eb;padding:1rem 1.25rem;position:relative}
+.co-dot{position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:50%;background:#ef4444}
+.co-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.co-avatar{width:38px;height:38px;border-radius:9px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.co-name{font-size:14px;font-weight:500;color:#111827;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.co-inn{font-size:12px;color:#6b7280;margin-top:2px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;margin-bottom:10px}
+.badge-blue{background:#eff6ff;color:#1d4ed8}
+.badge-green{background:#f0fdf4;color:#15803d}
+.badge-amber{background:#fef3c7;color:#92400e}
+.badge-red{background:#fee2e2;color:#dc2626}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.progress-row{display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px}
+.progress-pct{font-weight:500;color:#111827}
+.progress-bar{height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;margin-bottom:12px}
+.progress-fill{height:100%;border-radius:2px;transition:width .3s}
+.co-actions{display:flex;gap:8px}
+.empty-state{background:white;border-radius:12px;border:1px solid #e5e7eb;padding:3rem;text-align:center;color:#6b7280}
+.empty-icon{font-size:48px;opacity:.3;margin-bottom:12px}
+.empty-title{font-weight:500;color:#374151;font-size:16px}
+.empty-sub{font-size:14px;margin-top:6px}
+.back-btn{background:none;border:none;cursor:pointer;font-size:14px;color:#6b7280;padding:0;margin-bottom:10px;font-family:inherit;display:block}
+.co-detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.co-detail-title{font-size:20px;font-weight:500;color:#111827}
+.co-detail-sub{font-size:13px;color:#6b7280;margin-top:2px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #e5e7eb;margin-bottom:1.25rem}
+.tab{display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:14px;background:none;border:none;cursor:pointer;font-family:inherit;color:#6b7280;font-weight:400;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:#111827;font-weight:500;border-bottom-color:#111827}
+.reports-list{display:flex;flex-direction:column;gap:8px}
+.report-row{background:white;border-radius:12px;border:1px solid #e5e7eb;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:12px}
+.checkbox{width:22px;height:22px;border-radius:6px;border:2px solid #d1d5db;flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:white;transition:all .15s}
+.checkbox.checked{background:#10b981;border-color:#10b981}
+.checkbox-mark{color:white;font-size:13px;font-weight:700}
+.report-info{flex:1}
+.report-name{font-size:14px;font-weight:500;color:#111827}
+.report-name.done{color:#6b7280;text-decoration:line-through}
+.report-meta{display:flex;gap:12px;margin-top:4px;flex-wrap:wrap}
+.report-meta-item{font-size:12px;color:#6b7280}
+.report-meta-item.warn{color:#d97706}
+.status-badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;flex-shrink:0}
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;min-height:600px}
+.modal{background:white;border-radius:16px;padding:1.5rem;width:380px;max-width:90%}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.modal-title{font-size:17px;font-weight:500;color:#111827}
+.modal-close{background:none;border:none;cursor:pointer;color:#6b7280;font-size:18px}
+.form-group{margin-bottom:12px}
+.form-label{font-size:13px;font-weight:500;color:#374151;margin-bottom:4px;display:block}
+.form-input{width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;background:white}
+.form-actions{display:flex;gap:8px;margin-top:20px}
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f4f6}
+.login-box{width:360px;background:white;border-radius:16px;border:1px solid #e5e7eb;padding:2rem}
+.login-logo{text-align:center;margin-bottom:1.5rem}
+.login-icon{width:52px;height:52px;background:#111827;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:26px}
+.login-title{font-size:20px;font-weight:500;color:#111827}
+.login-hint{margin-top:12px;padding:10px;background:#f9fafb;border-radius:8px;font-size:12px;color:#6b7280;text-align:center}
+.login-langs{display:flex;justify-content:center;gap:6px;margin-top:14px}
+.login-lang{padding:4px 10px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;font-weight:500;background:white;color:#6b7280;font-family:inherit}
+.login-lang.active{background:#111827;color:white}
+.error-box{color:#dc2626;font-size:13px;margin-bottom:12px;padding:8px 12px;background:#fef2f2;border-radius:6px}
+.settings-page{padding:2rem;color:#6b7280}
+</style>
+
+<div id="app"></div>
+
+<script>
+const T={ru:{app:"Администратор отчётов",login:"Войти",uname:"Логин",pwd:"Пароль",err:"Неверный логин или пароль",hint:"Демо: admin / 1234",nav:{dash:"Главная",cos:"Компании",set:"Настройки"},logout:"Выйти",addCo:"Добавить компанию",coName:"Название компании",inn:"ИНН",regime:"Режим налогообложения",gen:"Общеустановленный",sim:"Упрощённый (НСО)",save:"Сохранить",cancel:"Отмена",back:"← Назад",delCo:"Удалить",delQ:"Удалить компанию?",sub:"Сдан",noSub:"Не сдан",over:"Просрочен",d1:"Срок завтра",d3:"Через 3 дня",tabs:{tax:"Налоговые",fin:"Финансовые",stat:"Статистические",hr:"Кадровые"},st:{cos:"Компаний",due:"К сдаче",done:"Сдано"},noCos:"Нет компаний",addF:"Добавьте первую компанию",alerts:"Срочные уведомления",ms:["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"],monthly:"Ежемесячно",quarterly:"Ежеквартально",annual:"Ежегодно",event:"По факту",of:"из",allDone:"Все сданы ✓",open:"Открыть"},uz:{app:"Hisobotlar boshqaruvchisi",login:"Kirish",uname:"Login",pwd:"Parol",err:"Noto'g'ri login yoki parol",hint:"Demo: admin / 1234",nav:{dash:"Bosh sahifa",cos:"Kompaniyalar",set:"Sozlamalar"},logout:"Chiqish",addCo:"Kompaniya qo'shish",coName:"Kompaniya nomi",inn:"INN",regime:"Soliq rejimi",gen:"Umumiy belgilangan",sim:"Soddalashtirilgan (NSO)",save:"Saqlash",cancel:"Bekor qilish",back:"← Orqaga",delCo:"O'chirish",delQ:"Kompaniyani o'chirish?",sub:"Topshirilgan",noSub:"Topshirilmagan",over:"Muddati o'tgan",d1:"Ertaga muddat",d3:"3 kunda muddat",tabs:{tax:"Soliq",fin:"Moliyaviy",stat:"Statistik",hr:"Kadrlar"},st:{cos:"Kompaniyalar",due:"Topshiriladigan",done:"Topshirilgan"},noCos:"Kompaniyalar yo'q",addF:"Birinchi kompaniyani qo'shing",alerts:"Shoshilinch bildirishnomalar",ms:["Yan","Fev","Mar","Apr","May","Iyn","Iyl","Avg","Sen","Okt","Noy","Dek"],monthly:"Oylik",quarterly:"Choraklik",annual:"Yillik",event:"Voqeaga ko'ra",of:"dan",allDone:"Barchasi topshirilgan ✓",open:"Ochish"},en:{app:"Reports Manager",login:"Log in",uname:"Username",pwd:"Password",err:"Invalid username or password",hint:"Demo: admin / 1234",nav:{dash:"Dashboard",cos:"Companies",set:"Settings"},logout:"Log out",addCo:"Add company",coName:"Company name",inn:"Tax ID",regime:"Tax regime",gen:"General",sim:"Simplified (NSO)",save:"Save",cancel:"Cancel",back:"← Back",delCo:"Delete",delQ:"Delete this company?",sub:"Submitted",noSub:"Not submitted",over:"Overdue",d1:"Due tomorrow",d3:"Due in 3 days",tabs:{tax:"Tax",fin:"Financial",stat:"Statistical",hr:"HR"},st:{cos:"Companies",due:"Due",done:"Submitted"},noCos:"No companies",addF:"Add your first company",alerts:"Urgent notifications",ms:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],monthly:"Monthly",quarterly:"Quarterly",annual:"Annual",event:"On event",of:"of",allDone:"All submitted ✓",open:"Open"}};
+
+function getRpts(r){
+  const tg=[{id:"nds",ru:"НДС и акцизный налог",uz:"QQS va aksiz solig'i",en:"VAT & excise tax",type:"monthly",dd:20,off:1},{id:"ndfl",ru:"НДФЛ и соц. налог",uz:"JDSH va ijtimoiy soliq",en:"Income & social tax",type:"monthly",dd:15,off:1},{id:"profit",ru:"Налог на прибыль",uz:"Foyda solig'i",en:"Corporate income tax",type:"quarterly",dd:20,off:1},{id:"prop",ru:"Налог на имущество",uz:"Mol-mulk solig'i",en:"Property tax",type:"annual",dm:3,dd:1}];
+  const ts=[{id:"turn",ru:"Налог с оборота",uz:"Aylanma solig'i",en:"Turnover tax",type:"monthly",dd:15,off:1},{id:"ndfl",ru:"НДФЛ и соц. налог",uz:"JDSH va ijtimoiy soliq",en:"Income & social tax",type:"monthly",dd:15,off:1}];
+  const fg=[{id:"f1",ru:"Форма №1: Бухгалтерский баланс",uz:"1-shakl: Buxgalteriya balansi",en:"Form 1: Balance sheet",type:"annual",dm:3,dd:1},{id:"f2",ru:"Форма №2: Финансовые результаты",uz:"2-shakl: Moliyaviy natijalar",en:"Form 2: Financial results",type:"annual",dm:3,dd:1},{id:"f3",ru:"Форма №3: Движение ОС",uz:"3-shakl: Asosiy vositalar",en:"Form 3: Fixed assets",type:"annual",dm:3,dd:1},{id:"f4",ru:"Форма №4: Денежные потоки",uz:"4-shakl: Pul oqimlari",en:"Form 4: Cash flow",type:"annual",dm:3,dd:1},{id:"f5",ru:"Форма №5: Собственный капитал",uz:"5-shakl: O'z kapitali",en:"Form 5: Equity",type:"annual",dm:3,dd:1}];
+  const fs=[{id:"f2a",ru:"Форма №2а: Дебиторка/кредиторка",uz:"2a-shakl: Debitor/kreditor",en:"Form 2a: Receivables/Payables",type:"annual",dm:3,dd:1}];
+  const st=[{id:"stm",ru:"Статистика деятельности (ежемес.)",uz:"Oylik faoliyat statistikasi",en:"Monthly activity statistics",type:"monthly",dd:5,off:1},{id:"stl",ru:"Отчёт по труду и зарплате",uz:"Mehnat va ish haqi hisoboti",en:"Labor & payroll report",type:"monthly",dd:5,off:1},{id:"stq",ru:"Квартальная статистика",uz:"Choraklik statistika",en:"Quarterly statistics",type:"quarterly",dd:10,off:1}];
+  const hr=[{id:"inps",ru:"Реестр ИНПС",uz:"INPS reestri",en:"INPS registry",type:"monthly",dd:15,off:1},{id:"enst",ru:"ЕНСТ my.mehnat.uz",uz:"YEMTT my.mehnat.uz",en:"ENST my.mehnat.uz",type:"event",dd:3,off:0}];
+  return{tax:r==="general"?tg:ts,fin:r==="general"?fg:fs,stat:st,hr};
+}
+
+function gPK(r){const n=new Date(),y=n.getFullYear(),m=n.getMonth()+1;if(r.type==="monthly"||r.type==="event")return`${y}-${String(m).padStart(2,"0")}`;if(r.type==="quarterly")return`${y}-Q${Math.ceil(m/3)}`;return`${y}`}
+function gDL(r){const n=new Date(),y=n.getFullYear(),m=n.getMonth()+1;if(r.type==="monthly"||r.type==="event"){let dm=m+(r.off||0),dy=y;if(dm>12){dm-=12;dy++;}return new Date(dy,dm-1,r.dd)}if(r.type==="quarterly"){const q=Math.ceil(m/3);let dm=q*3+(r.off||1),dy=y;if(dm>12){dm-=12;dy++;}return new Date(dy,dm-1,r.dd)}return new Date(y+1,(r.dm||3)-1,r.dd)}
+function dTo(d){const a=new Date();a.setHours(0,0,0,0);const b=new Date(d);b.setHours(0,0,0,0);return Math.ceil((b-a)/86400000)}
+function fD(d,ms){const x=new Date(d);return`${x.getDate()} ${ms[x.getMonth()]} ${x.getFullYear()}`}
+
+const store={
+  async get(k){try{if(window.storage?.get){const r=await window.storage.get(k);return r}return null}catch{}try{const v=localStorage.getItem(k);return v?{value:v}:null}catch{return null}},
+  async set(k,v){try{if(window.storage?.set)await window.storage.set(k,v)}catch{}try{localStorage.setItem(k,v)}catch{}},
+  async del(k){try{if(window.storage?.delete)await window.storage.delete(k)}catch{}try{localStorage.removeItem(k)}catch{}}
+};
+
+const DEMO=[{id:"c1",name:'ООО "Альфа Трейд"',inn:"300123456",regime:"general",submissions:{}},{id:"c2",name:"ИП Каримов А.А.",inn:"310987654",regime:"simplified",submissions:{}}];
+
+let S={lang:"ru",user:null,page:"dash",cos:[],sel:null,modal:false,tab:"tax",ready:false,loginErr:false,loginLoad:false};
+
+function ss(u){Object.assign(S,u);render()}
+
+async function init(){
+  try{const u=await store.get("rm_u");if(u?.value){S.user=JSON.parse(u.value);try{const c=await store.get("rm_c");S.cos=c?.value?JSON.parse(c.value):DEMO}catch{S.cos=DEMO}}}catch{}
+  S.ready=true;render();
+}
+
+async function saveCos(list){
+  S.cos=list;if(S.sel)S.sel=list.find(c=>c.id===S.sel.id)||null;
+  await store.set("rm_c",JSON.stringify(list));render();
+}
+
+function getAlerts(){
+  const a=[];S.cos.forEach(co=>{const rpts=getRpts(co.regime);["tax","fin","stat","hr"].forEach(cat=>{(rpts[cat]||[]).forEach(r=>{if(r.type==="event")return;const p=gPK(r),k=`${r.id}__${p}`;if(co.submissions[k])return;const d=dTo(gDL(r));if(d===1||d===3)a.push({coName:co.name,rName:r[S.lang]||r.ru,days:d})})})});return a;
+}
+
+function getCoStats(co){
+  const rpts=getRpts(co.regime);let total=0,sub=0,urgent=0;
+  ["tax","fin","stat","hr"].forEach(cat=>{(rpts[cat]||[]).forEach(r=>{if(r.type==="event")return;total++;const k=`${r.id}__${gPK(r)}`;if(co.submissions[k])sub++;else{const d=dTo(gDL(r));if(d>=0&&d<=3)urgent++}})});
+  return{total,sub,urgent,pct:total?Math.round(sub/total*100):0};
+}
+
+function render(){
+  const app=document.getElementById("app");
+  if(!app)return;
+  const t=T[S.lang];
+  if(!S.ready){app.innerHTML='<div style="padding:2rem;text-align:center;color:#6b7280">...</div>';return}
+  if(!S.user){app.innerHTML=renderLogin(t);return}
+  app.innerHTML=renderApp(t);
+}
+
+function renderLogin(t){
+  return`<div class="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-icon">📊</div>
+      <div class="login-title">${T[S.lang].app}</div>
+    </div>
+    <form id="loginForm">
+      <div class="form-group"><label class="form-label">${t.uname}</label><input class="form-input" id="loginUser" placeholder="admin" autocomplete="username" value="admin"></div>
+      <div class="form-group"><label class="form-label">${t.pwd}</label><input type="password" class="form-input" id="loginPwd" placeholder="••••" autocomplete="current-password" value="1234"></div>
+      ${S.loginErr?`<div class="error-box">${t.err}</div>`:''}
+      <button type="submit" class="btn btn-dark" style="width:100%;justify-content:center;padding:10px;margin-top:4px">${S.loginLoad?'...':t.login}</button>
+    </form>
+    <div class="login-hint">${t.hint}</div>
+    <div class="login-langs">
+      ${["ru","uz","en"].map(l=>`<button class="login-lang${S.lang===l?' active':''}" data-action="lang" data-lang="${l}">${l.toUpperCase()}</button>`).join('')}
+    </div>
+  </div>
+</div>`;
+}
+
+function renderApp(t){
+  return`<div class="app">
+  ${renderSidebar(t)}
+  <div class="main">
+    ${S.page==="dash"?renderDash(t):S.page==="co"&&S.sel?renderCoView(t):renderSettings(t)}
+  </div>
+  ${S.modal?renderModal(t):''}
+</div>`;
+}
+
+function renderSidebar(t){
+  const appParts=T[S.lang].app.split(" ");
+  return`<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-icon">📊</div>
+    <div class="sb-title">${appParts[0]}<br><span>${appParts.slice(1).join(" ")}</span></div>
+  </div>
+  <nav class="sb-nav">
+    ${[{k:"dash",i:"🏠",l:t.nav.dash},{k:"co",i:"🏢",l:t.nav.cos},{k:"set",i:"⚙️",l:t.nav.set}].map(item=>`
+    <div class="nav-item${S.page===item.k||(item.k==="co"&&S.page==="co")?" active":""}" data-action="nav" data-page="${item.k}">
+      <span class="nav-icon">${item.i}</span>${item.l}
+    </div>`).join('')}
+  </nav>
+  <div class="sb-bottom">
+    <div class="lang-btns">
+      ${["ru","uz","en"].map(l=>`<button class="lang-btn${S.lang===l?" active":""}" data-action="lang" data-lang="${l}">${l.toUpperCase()}</button>`).join('')}
+    </div>
+    <div class="user-row">
+      <div class="avatar">${S.user.username[0].toUpperCase()}</div>
+      <div class="user-name">${S.user.username}</div>
+      <button class="logout-btn" data-action="logout" title="${t.logout}">↪</button>
+    </div>
+  </div>
+</div>`;
+}
+
+function renderDash(t){
+  const now=new Date();
+  const dateStr=now.toLocaleDateString(S.lang==="en"?"en-US":S.lang==="uz"?"uz-UZ":"ru-RU",{day:"numeric",month:"long",year:"numeric"});
+  let totalSub=0,due=0;
+  S.cos.forEach(co=>{const rpts=getRpts(co.regime);["tax","fin","stat","hr"].forEach(cat=>{(rpts[cat]||[]).forEach(r=>{if(r.type==="event")return;const k=`${r.id}__${gPK(r)}`;if(co.submissions[k])totalSub++;else{const d=dTo(gDL(r));if(d>=0&&d<=7)due++}})})});
+  const alerts=getAlerts();
+  return`<div class="page">
+  <div class="page-header">
+    <div><div class="page-title">${t.nav.dash}</div><div class="page-sub">${dateStr}</div></div>
+    <button class="btn btn-dark" data-action="open-modal">+ ${t.addCo}</button>
+  </div>
+  ${alerts.length>0?`<div class="alerts-box"><div class="alerts-title">🔔 ${t.alerts}</div>${alerts.map(a=>`<div class="alert-item"><strong>${a.coName}</strong> — ${a.rName}: <span class="alert-tag" style="color:${a.days<=1?"#dc2626":"#d97706"}">${a.days<=1?t.d1:t.d3}</span></div>`).join('')}</div>`:''}
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-icon" style="background:#3b82f622">🏢</div><div><div class="stat-label">${t.st.cos}</div><div class="stat-val">${S.cos.length}</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#f59e0b22">⏰</div><div><div class="stat-label">${t.st.due}</div><div class="stat-val">${due}</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#10b98122">✅</div><div><div class="stat-label">${t.st.done}</div><div class="stat-val">${totalSub}</div></div></div>
+  </div>
+  ${S.cos.length===0?`<div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">${t.noCos}</div><div class="empty-sub">${t.addF}</div></div>`:`<div class="cos-grid">${S.cos.map(co=>renderCoCard(co,t)).join('')}</div>`}
+</div>`;
+}
+
+function renderCoCard(co,t){
+  const{total,sub,urgent,pct}=getCoStats(co);const allDone=sub===total;
+  const barColor=allDone?"#10b981":urgent>0?"#f59e0b":"#3b82f6";
+  return`<div class="co-card">
+  ${urgent>0?'<div class="co-dot"></div>':''}
+  <div class="co-head">
+    <div class="co-avatar">🏢</div>
+    <div style="flex:1;min-width:0"><div class="co-name">${co.name}</div><div class="co-inn">${t.inn}: ${co.inn}</div></div>
+  </div>
+  <span class="badge ${co.regime==="general"?"badge-blue":"badge-green"}">${co.regime==="general"?t.gen:t.sim}</span>
+  <div class="progress-row"><span>${allDone?t.allDone:`${sub} ${t.of} ${total}`}</span><span class="progress-pct" style="color:${allDone?"#10b981":"#111827"}">${pct}%</span></div>
+  <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div>
+  <div class="co-actions">
+    <button class="btn btn-dark" style="flex:1;justify-content:center;padding:7px 12px;font-size:13px" data-action="select-co" data-id="${co.id}">${t.open} →</button>
+    <button class="btn btn-danger" style="padding:7px 10px" data-action="del-co" data-id="${co.id}">🗑</button>
+  </div>
+</div>`;
+}
+
+function renderCoView(t){
+  const co=S.sel;const rpts=getRpts(co.regime);const list=rpts[S.tab]||[];
+  const tabs=[{k:"tax",i:"💰",l:t.tabs.tax},{k:"fin",i:"📈",l:t.tabs.fin},{k:"stat",i:"📊",l:t.tabs.stat},{k:"hr",i:"👥",l:t.tabs.hr}];
+  const rows=list.map(r=>{
+    const p=gPK(r),k=`${r.id}__${p}`;const isSub=!!co.submissions[k];
+    const dl=r.type!=="event"?gDL(r):null;const days=dl?dTo(dl):null;
+    const rName=r[S.lang]||r.ru;
+    const freq=r.type==="monthly"?t.monthly:r.type==="quarterly"?t.quarterly:r.type==="annual"?t.annual:t.event;
+    let sBg="#f3f4f6",sC="#6b7280",sT=t.noSub;
+    if(isSub){sBg="#dcfce7";sC="#15803d";sT=t.sub}else if(days!==null&&days<0){sBg="#fee2e2";sC="#dc2626";sT=t.over}else if(days!==null&&days<=1){sBg="#fef3c7";sC="#d97706";sT=t.d1}else if(days!==null&&days<=3){sBg="#fef3c7";sC="#d97706";sT=t.d3}
+    return`<div class="report-row">
+      <div class="checkbox${isSub?" checked":""}" data-action="toggle" data-coid="${co.id}" data-rid="${r.id}" data-period="${p}">${isSub?'<span class="checkbox-mark">✓</span>':''}</div>
+      <div class="report-info">
+        <div class="report-name${isSub?" done":""}">${rName}</div>
+        <div class="report-meta">
+          <span class="report-meta-item">🔄 ${freq}</span>
+          ${dl&&!isSub?`<span class="report-meta-item${days!==null&&days<=3?" warn":""}">📅 ${fD(dl,t.ms)}</span>`:''}
+        </div>
+      </div>
+      <span class="status-badge" style="background:${sBg};color:${sC}">${sT}</span>
+    </div>`;
+  }).join('');
+  return`<div class="page">
+  <button class="back-btn" data-action="back">${t.back}</button>
+  <div class="co-detail-header">
+    <div><div class="co-detail-title">${co.name}</div><div class="co-detail-sub">${t.inn}: ${co.inn} · ${co.regime==="general"?t.gen:t.sim}</div></div>
+    <button class="btn btn-danger" data-action="del-co" data-id="${co.id}">🗑 ${t.delCo}</button>
+  </div>
+  <div class="tabs">${tabs.map(tb=>`<button class="tab${S.tab===tb.k?" active":""}" data-action="tab" data-tab="${tb.k}"><span>${tb.i}</span>${tb.l}</button>`).join('')}</div>
+  <div class="reports-list">${rows.length?rows:`<div class="empty-state" style="padding:2rem">—</div>`}</div>
+</div>`;
+}
+
+function renderSettings(t){return`<div class="settings-page"><p>⚙ ${t.nav.set}</p></div>`}
+
+function renderModal(t){
+  return`<div class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">${t.addCo}</div><button class="modal-close" data-action="close-modal">✕</button></div>
+    <div class="form-group"><label class="form-label">${t.coName}</label><input class="form-input" id="newName" placeholder='ООО "Название"'></div>
+    <div class="form-group"><label class="form-label">${t.inn}</label><input class="form-input" id="newInn" placeholder="300000001"></div>
+    <div class="form-group"><label class="form-label">${t.regime}</label>
+      <select class="form-input" id="newRegime"><option value="general">${t.gen}</option><option value="simplified">${t.sim}</option></select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" style="flex:1;justify-content:center" data-action="close-modal">${t.cancel}</button>
+      <button class="btn btn-dark" style="flex:1;justify-content:center" data-action="save-co">${t.save}</button>
+    </div>
+  </div>
+</div>`;
+}
+
+document.getElementById("app").addEventListener("click",async(e)=>{
+  const el=e.target.closest("[data-action]");if(!el)return;
+  const{action,...data}=el.dataset;const t=T[S.lang];
+  if(action==="lang"){ss({lang:data.lang})}
+  else if(action==="logout"){await store.del("rm_u");ss({user:null,page:"dash",sel:null,cos:[]})}
+  else if(action==="nav"){ss({page:data.page==="co"?"dash":data.page,sel:data.page==="co"?null:S.sel})}
+  else if(action==="back"){ss({page:"dash",sel:null})}
+  else if(action==="open-modal"){ss({modal:true})}
+  else if(action==="close-modal"){ss({modal:false})}
+  else if(action==="select-co"){const co=S.cos.find(c=>c.id===data.id);if(co)ss({sel:co,page:"co",tab:"tax"})}
+  else if(action==="del-co"){if(confirm(t.delQ)){await saveCos(S.cos.filter(c=>c.id!==data.id));if(S.sel?.id===data.id)ss({page:"dash",sel:null})}}
+  else if(action==="tab"){ss({tab:data.tab})}
+  else if(action==="save-co"){
+    const name=document.getElementById("newName")?.value?.trim();
+    const inn=document.getElementById("newInn")?.value?.trim()||"";
+    const regime=document.getElementById("newRegime")?.value||"general";
+    if(name){await saveCos([...S.cos,{id:Date.now()+"",name,inn,regime,submissions:{}}]);ss({modal:false})}
+  }
+  else if(action==="toggle"){
+    const k=`${data.rid}__${data.period}`;
+    const list=S.cos.map(c=>c.id!==data.coid?c:{...c,submissions:{...c.submissions,[k]:!c.submissions[k]}});
+    await saveCos(list);
+  }
+});
+
+document.getElementById("app").addEventListener("submit",async(e)=>{
+  if(e.target.id!=="loginForm")return;e.preventDefault();
+  const u=document.getElementById("loginUser")?.value?.trim();
+  const p=document.getElementById("loginPwd")?.value;
+  if(u==="admin"&&p==="1234"){
+    const user={username:u};await store.set("rm_u",JSON.stringify(user));
+    try{const c=await store.get("rm_c");const cos=c?.value?JSON.parse(c.value):DEMO;if(!c?.value)await store.set("rm_c",JSON.stringify(DEMO));ss({user,cos,loginErr:false})}
+    catch{ss({user,cos:DEMO,loginErr:false})}
+  }else{ss({loginErr:true})}
+});
+
+init();
+</script>
